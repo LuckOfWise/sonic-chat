@@ -4,7 +4,7 @@
       .chat__container(v-on:scroll='onScroll', ref='chatContainer')
         message(:messages='messages')
       .chat__form
-        textarea(v-on:keydown='sendMessage($event)', v-model='content', placeholder='Ctrl+Enterで送信')
+        textarea(v-on:keydown='sendMessage($event)', @compositionstart="composing=true", @compositionend="composing=false", v-model='content', placeholder='Enterで送信')
     v-dialog(v-model='showUserForm' max-width='500px' persistent=true)
       v-card
         v-card-title
@@ -32,12 +32,18 @@ export default {
       loading: false,
       totalChatHeight: 0,
       unsubscribe: null,
-      dialog: true
+      dialog: true,
+      composing: false
     }
   },
   mounted () {
     this.roomId = this.$route.params.slug
     this.loadRoom()
+    this.calcLayout()
+    window.addEventListener('resize', this.calcLayout)
+  },
+  destroyed () {
+    window.removeEventListener('resize', this.calcLayout)
   },
   components: {
     'message': Message
@@ -92,10 +98,12 @@ export default {
     onScroll () {
     },
     sendMessage (event) {
-      if ((event.ctrlKey || event.metaKey) && event.keyCode === 13) {
-        if (this.content !== '') {
+      if (event.keyCode === 13) {
+        if (this.composing) return
+        if (!event.shiftKey && this.content !== '') {
           this.$store.dispatch('room/sendMessage', { content: this.content, roomId: this.roomId, userId: this.currentUser.uid })
           this.content = ''
+          event.preventDefault()
         }
       }
     },
@@ -118,10 +126,22 @@ export default {
         var container = this.$el.querySelector('.chat__container')
         container.scrollTop = difference
       })
+    },
+    calcLayout () {
+      const height = window.innerHeight - 144
+      const style = this.$refs.chatContainer.style
+      style.height = height + 'px'
+      console.log(style)
     }
   }
 }
 </script>
+
+<style lang="sass">
+html, body
+  height: 100%
+  overflow: hidden
+</style>
 
 <style lang="sass" scoped>
 .chat__container
@@ -132,17 +152,16 @@ export default {
   background-color: #f2f2f2
 
 .chat__form
+  position: absolute
   box-sizing: border-box
   display: flex
   align-items: center
   bottom: 0
-  height: 4.9rem
   width: 100%
   background-color: #fff
   box-shadow: 0 -5px 10px -5px rgba(0,0,0,.2)
   
   textarea
-    position: absolute
     padding: 1rem
     width: 100%
     background-color: transparent
