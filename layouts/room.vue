@@ -1,6 +1,6 @@
 <template>
   <v-app>
-    <v-toolbar fixed app>
+    <v-toolbar app>
       <v-toolbar-title v-text="title"></v-toolbar-title>
       <v-spacer></v-spacer>
       <v-btn
