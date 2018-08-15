@@ -1,10 +1,11 @@
 <template lang="pug">
-  v-layout.row
-    v-flex.xs-12.sm-8
-      .chat__container(v-on:scroll='onScroll', ref='chatContainer')
-        message(:messages='messages')
-      .chat__form
-        textarea(v-on:keydown='sendMessage($event)', @compositionstart="composing=true", @compositionend="composing=false", v-model='content', placeholder='Enterで送信')
+  div
+    div
+      .chat__container(ref='chatContainer')
+        .chat__messages(v-on:scroll='onScroll', ref='chatMessages')
+          message(:messages='messages')
+        .chat__form
+          textarea(v-on:keydown='sendMessage($event)', @compositionstart="composing=true", @compositionend="composing=false", v-model='content', placeholder='Enterで送信')
     v-dialog(v-model='showUserForm' max-width='500px' persistent=true)
       v-card
         v-card-title
@@ -115,7 +116,7 @@ export default {
     },
     scrollToEnd () {
       this.$nextTick(() => {
-        var container = this.$el.querySelector('.chat__container')
+        var container = this.$el.querySelector('.chat__messages')
         container.scrollTop = container.scrollHeight
       })
     },
@@ -123,12 +124,12 @@ export default {
       this.$nextTick(() => {
         let currentHeight = this.$refs.chatContainer.scrollHeight
         let difference = currentHeight - this.totalChatHeight
-        var container = this.$el.querySelector('.chat__container')
+        var container = this.$el.querySelector('.chat__messages')
         container.scrollTop = difference
       })
     },
     calcLayout () {
-      const height = window.innerHeight - 136
+      const height = window.innerHeight - 56
       const style = this.$refs.chatContainer.style
       style.height = height + 'px'
       console.log(style)
@@ -139,23 +140,31 @@ export default {
 
 <style lang="sass">
 html, body
-  height: 100%
   overflow: hidden
 </style>
 
 <style lang="sass" scoped>
 .chat__container
   box-sizing: border-box
-  height: calc(100vh - 9.5rem)
-  overflow-y: auto
-  padding: 10px
+  height: calc(100vh - 56px)
+  overflow: hidden
   background-color: #f2f2f2
-
+  position: relative
+.chat__messages
+  position: absolute
+  overflow-y: auto
+  top: 0
+  left: 0
+  right: 0
+  bottom: 80px
+  padding: 10px
 .chat__form
   position: absolute
   box-sizing: border-box
   display: flex
   align-items: center
+  left: 0
+  right: 9
   bottom: 0
   width: 100%
   background-color: #fff
