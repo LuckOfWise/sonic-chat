@@ -128,7 +128,7 @@ export default {
       })
     },
     calcLayout () {
-      const height = window.innerHeight - 144
+      const height = window.innerHeight - 136
       const style = this.$refs.chatContainer.style
       style.height = height + 'px'
       console.log(style)
