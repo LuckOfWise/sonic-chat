@@ -32,7 +32,8 @@ export default {
       initialized: false,
       loading: false,
       totalChatHeight: 0,
-      unsubscribe: null,
+      unsubscribeRoom: null,
+      unsubscribeMessages: null,
       dialog: true,
       composing: false
     }
@@ -70,11 +71,14 @@ export default {
     loadRoom () {
       this.initialized = false
       this.loading = false
-      if (this.unsubscribe !== null) {
-        this.unsubscribe()
+      if (this.unsubscribeMessages !== null) {
+        this.unsubscribeMessages()
+      }
+      if (this.unsubscribeMessages !== null) {
+        this.unsubscribeMessages()
       }
       if (this.roomId !== undefined) {
-        this.$store.state.db.doc(`rooms/${this.roomId}`)
+        this.unsubscribeRoom = this.$store.state.db.doc(`rooms/${this.roomId}`)
           .onSnapshot((doc) => {
             this.initialized = true
             if (!doc.exists) {
@@ -85,7 +89,7 @@ export default {
             }
             this.$store.commit('room/SET_USERS', {users: this.roomUsers})
           })
-        this.unsubscribe = this.$store.state.db.collection(`rooms/${this.roomId}/messages`).orderBy('createdAt')
+        this.unsubscribeMessages = this.$store.state.db.collection(`rooms/${this.roomId}/messages`).orderBy('createdAt')
           .onSnapshot((snapshot) => {
             snapshot.docChanges().forEach((change) => {
               if (change.type === 'added') {
